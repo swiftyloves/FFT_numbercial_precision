@@ -72,17 +72,15 @@ void FFT(complex<double>* f, int N, double d)
 }
 
 
-complex<double>* recur_FFT(complex<double>* arr, int N)
+complex<double>* recur_FFT(complex<double>* arr, int N, int clockwise)
 {
   if (N == 1) {
-    complex<double> *res = (complex<double> *)malloc(1 * sizeof(complex<double>));
-    res[0] = polar(arr[0].real() + 0.0, 0.0);
-    return res;
+    return arr;
   }
   complex<double> *W;
   W = (complex<double> *)malloc(N * sizeof(complex<double>)); // 用複數存
   W[0] = 1; // W[0]: (1,0i) 初始值 x = 1, y = 0
-  W[1] = polar(1., 2. * M_PI / N); // mag 1, angle -2. * M_PI / N 用 polar 轉 x, y // (6.12323e-17,-1*j), 6.12323e-17 should be 0 if no error
+  W[1] = polar(1., clockwise * 2. * M_PI / N); // mag 1, angle -2. * M_PI / N <- unit angle
   // initialize the rest of W
   for(int i = 2; i < N; i++)
     W[i] = pow(W[1], i);
@@ -96,21 +94,21 @@ complex<double>* recur_FFT(complex<double>* arr, int N)
       odd[i / 2] = arr[i];
     }
   }
-  for(int i = 0; i < N / 2; i++) {
-    cout << even[i] << "\t";
-  }
-  for(int i = 0; i < N / 2; i++) {
-    cout << odd[i] << "\t";
-  }
-  cout << endl;
 
-  complex<double> * even_result = recur_FFT(even, N/2);
-  complex<double> * odd_result = recur_FFT(odd, N/2);
+  complex<double> * even_result = recur_FFT(even, N/2, clockwise);
+  complex<double> * odd_result = recur_FFT(odd, N/2, clockwise);
 
   complex<double> * result = (complex<double> *)malloc(N * sizeof(complex<double>));
+  if (clockwise) {
   for(int i = 0; i < N / 2; i++) {
     result[i] = (even_result[i] + odd_result[i] * W[i]);
     result[i + N / 2] = (even_result[i] - odd_result[i] * W[i]);
+  }
+  } else {
+    for(int i = N / 2 - 1; i >= 0; i--) {
+      result[i] = (even_result[i] + odd_result[i] * W[i]);
+      result[i - N / 2] = (even_result[i] - odd_result[i] * W[i]);
+    }
   }
 
   return result;
