@@ -142,19 +142,19 @@ int main()
 int main()
 {
   int n;
-  do {
-    cout << "specify n of w_n (Sould? be power of 2)" << endl;
-    cin >> n;
-  } while(!check(n));
-
   complex<double> vec[MAX];
 
-  cout << "Enter n coefficient for first polynomial" << endl;
-  double real, imag;
-  for(int i = 0; i < n; i++) {
-    cout << "specify element number: " << i << endl;
-    cin >> vec[i];
+  ifstream file("coefficient.txt");
+  while(1)
+  {
+  file >> n;
+  if( file.eof() ) break;
+
+  for(int i = 0; i < n; ++i)
+  {
+      file >> vec[i];
   }
+
   for(int j = 0; j < n; j++)
     cout << vec[j] << endl;
 
