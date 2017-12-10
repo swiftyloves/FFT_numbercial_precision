@@ -71,11 +71,12 @@ void FFT(complex<double>* f, int N, double d)
     f[i] *= d; //multiplying by step
 }
 
-complex<double>* recur_FFT(int* arr, int N)
+
+complex<double>* recur_FFT(complex<double>* arr, int N)
 {
   if (N == 1) {
     complex<double> *res = (complex<double> *)malloc(1 * sizeof(complex<double>));
-    res[0] = polar(arr[0] + 0.0, 0.0);
+    res[0] = polar(arr[0].real() + 0.0, 0.0);
     return res;
   }
   complex<double> *W;
@@ -86,8 +87,8 @@ complex<double>* recur_FFT(int* arr, int N)
   for(int i = 2; i < N; i++)
     W[i] = pow(W[1], i);
 
-  int * even = (int *)malloc(N / 2 * sizeof(int));
-  int * odd = (int *)malloc(N / 2 * sizeof(int));
+  complex<double>* even = (complex<double>*)malloc(N / 2 * sizeof(complex<double>));
+  complex<double>* odd = (complex<double>*)malloc(N / 2 * sizeof(complex<double>));
   for(int i = 0; i < N; i++) {
     if (i % 2 == 0) {
       even[i / 2] = arr[i];
