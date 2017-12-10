@@ -4,74 +4,6 @@
 
 using namespace std;
 
-
-int log2(int N)    /*function to calculate the log2(.) of int numbers*/
-{
-  int k = N, i = 0;
-  while(k) {
-    k >>= 1;
-    i++;
-  }
-  return i - 1;
-}
-
-int check(int n)    //checking if the number of element is a power of 2
-{
-  return n > 0 && (n & (n - 1)) == 0;
-}
-
-int reverse(int N, int n)    //calculating revers number
-{
-  int j, p = 0;
-  for(j = 1; j <= log2(N); j++) {
-    if(n & (1 << (log2(N) - j)))
-      p |= 1 << (j - 1);
-  }
-  return p;
-}
-
-void ordina(complex<double>* f1, int N) //using the reverse order in the array
-{
-  complex<double> f2[MAX];
-  for(int i = 0; i < N; i++)
-    f2[i] = f1[reverse(N, i)];
-  for(int j = 0; j < N; j++)
-    f1[j] = f2[j];
-}
-
-void transform(complex<double>* f, int N) //
-{
-  ordina(f, N);    //first: reverse order
-  complex<double> *W;
-  W = (complex<double> *)malloc(N / 2 * sizeof(complex<double>));
-  W[1] = polar(1., -2. * M_PI / N);
-  W[0] = 1;
-  for(int i = 2; i < N / 2; i++)
-    W[i] = pow(W[1], i);
-  int n = 1;
-  int a = N / 2;
-  for(int j = 0; j < log2(N); j++) {
-    for(int i = 0; i < N; i++) {
-      if(!(i & n)) {
-        complex<double> temp = f[i];
-        complex<double> Temp = W[(i * a) % (n * a)] * f[i + n];
-        f[i] = temp + Temp;
-        f[i + n] = temp - Temp;
-      }
-    }
-    n *= 2;
-    a = a / 2;
-  }
-}
-
-void FFT(complex<double>* f, int N, double d)
-{
-  transform(f, N);
-  for(int i = 0; i < N; i++)
-    f[i] *= d; //multiplying by step
-}
-
-
 complex<double>* recur_FFT(complex<double>* arr, int N, int clockwise)
 {
   if (N == 1) {
@@ -141,50 +73,57 @@ int main()
 
 int main()
 {
-  int n;
-  complex<double> vec[MAX];
+    int n;
+    complex<double> vec[MAX];
 
-  ifstream file("coefficient.txt");
-  while(1)
-  {
-  file >> n;
-  if( file.eof() ) break;
+    ofstream myfile;
+    myfile.open ("mse_double.csv");
 
-  for(int i = 0; i < n; ++i)
-  {
-      file >> vec[i];
-  }
+    ifstream file("coefficient.txt");
+    while(1)
+    {
+        file >> n;
+        if( file.eof() ) break;
 
-  for(int j = 0; j < n; j++)
-    cout << vec[j] << endl;
+        for(int i = 0; i < n; ++i)
+        {
+            file >> vec[i];
+        }
 
-  /* Sampling step, set to 1
-  double d;
-  cout << "specify sampling step" << endl; //just write 1 in order to have the same results of matlab fft(.)
-  cin >> d;
-  */
+        for(int j = 0; j < n; j++)
+          cout << vec[j] << endl;
 
-  complex<double> * ans = (complex<double> *)malloc(n * sizeof(complex<double>));
-  ans = recur_FFT(vec, n, 1);
-  // FFT(vec, n, 1);
-  cout << "...printing the FFT of the array specified" << endl;
-  for(int j = 0; j < n; j++)
-    // cout << vec[j] << endl;
-    cout << ans[j] << endl;
+        /* Sampling step, set to 1
+        double d;
+        cout << "specify sampling step" << endl; //just write 1 in order to have the same results of matlab fft(.)
+        cin >> d;
+        */
 
-  cout << endl;
-  cout << endl;
-  cout << "=================  REVERSE =============\n";
-  complex<double> * reverse_ans = (complex<double> *)malloc(n * sizeof(complex<double>));
-  reverse_ans = recur_FFT(ans, n, -1);
+        complex<double> * ans = (complex<double> *)malloc(n * sizeof(complex<double>));
+        ans = recur_FFT(vec, n, 1);
+        // FFT(vec, n, 1);
+        cout << "=================  FFT =============\n";
+        for(int j = 0; j < n; j++)
+        // cout << vec[j] << endl;
+        cout << ans[j] << endl;
 
-  for(int j = 0; j < n; j++) {
-    reverse_ans[j] = reverse_ans[j] / polar(n + 0.0, 0.0);
-  }
+        cout << endl;
+        cout << endl;
+        cout << "=================  REVERSE =============\n";
+        complex<double> * reverse_ans = (complex<double> *)malloc(n * sizeof(complex<double>));
+        reverse_ans = recur_FFT(ans, n, -1);
 
-  cout << "...printing the inverse FFT of the array specified" << endl;
-  for(int j = 0; j < n; j++)
-    cout << reverse_ans[j] << endl;
+        for(int j = 0; j < n; j++) {
+        reverse_ans[j] = reverse_ans[j] / polar(n + 0.0, 0.0);
+        }
 
-  return 0;
+        for(int j = 0; j < n; j++)
+        cout << reverse_ans[j] << endl;
+    }
+
+
+    // myfile << "Writing this to a file.\n";
+    myfile.close();
+
+    return 0;
 }
