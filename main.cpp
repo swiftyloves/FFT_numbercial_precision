@@ -1,5 +1,7 @@
 #include <iostream>
+#include <fstream>
 #include <complex>
+#include <math.h>
 #define MAX 200
 
 using namespace std;
@@ -119,6 +121,24 @@ int main()
 
         for(int j = 0; j < n; j++)
         cout << reverse_ans[j] << endl;
+
+        cout << "================= ERROR RMS = sqrt(MSE) =============\n";
+        double sum = 0.0;
+        for(int j = 0; j < n; j++) {
+            double diff_real = vec[j].real() - reverse_ans[j].real();
+            diff_real *= diff_real;
+            double diff_imag = vec[j].imag() - reverse_ans[j].imag();
+            diff_imag *= diff_imag;
+            sum += diff_imag;
+        }
+        double erro = sqrt(sum / 2 / n);
+        cout << "error:" << erro << endl;
+
+        cout << "================= ERROR X >= 1.0 =============\n";
+
+
+        cout << "================= ERROR X < 1.0 =============\n";
+
     }
 
 
