@@ -137,3 +137,54 @@ int main()
     cout << vec[j] << endl;
   return 0;
 }
+*/
+
+int main()
+{
+  int n;
+  do {
+    cout << "specify n of w_n (Sould? be power of 2)" << endl;
+    cin >> n;
+  } while(!check(n));
+
+  complex<double> vec[MAX];
+
+  cout << "Enter n coefficient for first polynomial" << endl;
+  double real, imag;
+  for(int i = 0; i < n; i++) {
+    cout << "specify element number: " << i << endl;
+    cin >> vec[i];
+  }
+  for(int j = 0; j < n; j++)
+    cout << vec[j] << endl;
+
+  /* Sampling step, set to 1
+  double d;
+  cout << "specify sampling step" << endl; //just write 1 in order to have the same results of matlab fft(.)
+  cin >> d;
+  */
+
+  complex<double> * ans = (complex<double> *)malloc(n * sizeof(complex<double>));
+  ans = recur_FFT(vec, n, 1);
+  // FFT(vec, n, 1);
+  cout << "...printing the FFT of the array specified" << endl;
+  for(int j = 0; j < n; j++)
+    // cout << vec[j] << endl;
+    cout << ans[j] << endl;
+
+  cout << endl;
+  cout << endl;
+  cout << "=================  REVERSE =============\n";
+  complex<double> * reverse_ans = (complex<double> *)malloc(n * sizeof(complex<double>));
+  reverse_ans = recur_FFT(ans, n, -1);
+
+  for(int j = 0; j < n; j++) {
+    reverse_ans[j] = reverse_ans[j] / polar(n + 0.0, 0.0);
+  }
+
+  cout << "...printing the inverse FFT of the array specified" << endl;
+  for(int j = 0; j < n; j++)
+    cout << reverse_ans[j] << endl;
+
+  return 0;
+}
