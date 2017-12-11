@@ -89,16 +89,38 @@ double diff_square(complex<double> * original_coefficient, complex<double> * tra
 int main()
 {
     int n;
+    double * x = new double[MAX];
+    double * x_smaller_than1 = new double[MAX];
+    int x_n;
+    string x_data_number;
+
     complex<double> original_coefficient[MAX];
+    string openfilename;
+    
+    cout << "Enter the amout of x value" << endl;
+    cin >> x_n;
 
-    ofstream myfile;
-    myfile.open ("mse_double.csv");
+    cout << "Enter the coefficient polynomial data of x" << endl;
+    cin >> x_data_number;
 
-    ifstream file("coefficient.txt");
+    ifstream file("coefficient_polynomial" + x_data_number + ".txt");
+    ifstream x_file("x_value.txt");
+    for(int j = 0; j < x_n; j++) {
+        x[j] = j;
+    }
+    for(int j = 0; j < x_n; j++) {
+        x_smaller_than1[j] = pow(10,-1*j);
+    }
+    int surfix = 0;
     while(1)
     {
+        
         file >> n;
         if( file.eof() ) break;
+        string err_file_name = "error_data/error" + std::to_string(surfix);
+        string err_small_1_file_name = "error_data/error_small" + std::to_string(surfix);
+        ofstream error_file(err_file_name);
+        ofstream error_small_file(err_small_1_file_name);
 
         for(int i = 0; i < n; ++i)
         {
@@ -149,18 +171,23 @@ int main()
 
         cout << "================= ERROR X >= 1.0 =============\n";
         double error_sum = 0.0;
+        double error_small_sum = 0.0;
         for(int i = 0; i < x_n; ++i)
         {
             error_sum = diff_square(original_coefficient, transformed_coefficient, n, x[i]);
-            double error = sqrt(error_sum / 2 / n);
+            error_small_sum = diff_square(original_coefficient, transformed_coefficient, n, x_smaller_than1[i]);
+            double error = sqrt(error_sum / n / 2);
+            double error_small = sqrt(error_small_sum / n / 2);
             cout << "x = " << x[i] << "\t\t error = " << error << endl;
-            myfile << x[i] << " " << error << endl;
+            cout << "x = " << x_smaller_than1[i] << "\t\t error = " << error_small << endl;
+            error_file << x[i] << " " << error << endl;
+            error_small_file << x_smaller_than1[i] << " " << error_small << endl;
         }
-        myfile.close();
+
+        error_file.close();
+        error_small_file.close();
         surfix += 1;
     }
-
-    
 
     return 0;
 }
