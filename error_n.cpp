@@ -6,42 +6,45 @@
 
 using namespace std;
 
-complex<double>* recur_FFT(complex<double>* arr, int N, int clockwise)
+complex<double>* recur_FFT(complex<double>* arr, int N, int clockwise, int x_measure)
 {
-  if (N == 1) {
+  if (x_measure == 1) {
     return arr;
   }
   complex<double> *W;
-  W = (complex<double> *)malloc(N * sizeof(complex<double>)); // 用複數存
+  W = (complex<double> *)malloc(x_measure * sizeof(complex<double>)); // 用複數存
   W[0] = 1; // W[0]: (1,0i) 初始值 x = 1, y = 0
-  W[1] = polar(1., clockwise * 2. * M_PI / N); // mag 1, angle -2. * M_PI / N <- unit angle
+  W[1] = polar(1., clockwise * 2. * M_PI / x_measure); // mag 1, angle -2. * M_PI / N <- unit angle
   // initialize the rest of W
-  for(int i = 2; i < N; i++)
+  for(int i = 2; i < x_measure; i++)
     W[i] = pow(W[1], i);
 
-  complex<double>* even = (complex<double>*)malloc(N / 2 * sizeof(complex<double>));
-  complex<double>* odd = (complex<double>*)malloc(N / 2 * sizeof(complex<double>));
+  complex<double>* even = (complex<double>*)malloc(x_measure / 2 * sizeof(complex<double>));
+  complex<double>* odd = (complex<double>*)malloc(x_measure / 2 * sizeof(complex<double>));
+  int unit = N / x_measure;
   for(int i = 0; i < N; i++) {
-    if (i % 2 == 0) {
-      even[i / 2] = arr[i];
-    } else {
-      odd[i / 2] = arr[i];
+    if (i % unit == 0){
+      if (i % 2 == 0) {
+        even[i / 2] = arr[i];
+      } else {
+        odd[i / 2] = arr[i];
+      }
     }
   }
 
-  complex<double> * even_result = recur_FFT(even, N/2, clockwise);
-  complex<double> * odd_result = recur_FFT(odd, N/2, clockwise);
+  complex<double> * even_result = recur_FFT(even, N / 2, clockwise, x_measure / 2);
+  complex<double> * odd_result = recur_FFT(odd, N / 2, clockwise, x_measure / 2);
 
-  complex<double> * result = (complex<double> *)malloc(N * sizeof(complex<double>));
+  complex<double> * result = (complex<double> *)malloc(x_measure * sizeof(complex<double>));
   if (clockwise) {
-  for(int i = 0; i < N / 2; i++) {
+  for(int i = 0; i < x_measure / 2; i++) {
     result[i] = (even_result[i] + odd_result[i] * W[i]);
-    result[i + N / 2] = (even_result[i] - odd_result[i] * W[i]);
+    result[i + x_measure / 2] = (even_result[i] - odd_result[i] * W[i]);
   }
   } else {
-    for(int i = N / 2 - 1; i >= 0; i--) {
+    for(int i = x_measure / 2 - 1; i >= 0; i--) {
       result[i] = (even_result[i] + odd_result[i] * W[i]);
-      result[i - N / 2] = (even_result[i] - odd_result[i] * W[i]);
+      result[i - x_measure / 2] = (even_result[i] - odd_result[i] * W[i]);
     }
   }
 
@@ -92,6 +95,7 @@ int main()
     double * x = new double[MAX];
     double * x_smaller_than1 = new double[MAX];
     int x_n;
+    int x_measure;
     string x_data_number;
 
     complex<double> original_coefficient[MAX];
@@ -103,6 +107,9 @@ int main()
     cout << "Enter the coefficient polynomial data of x" << endl;
     cin >> x_data_number;
     // x_data_number = std::string(x_n);
+
+    cout << "Enter the mesure coefficient polynomial data of x, n = " << endl;
+    cin >> x_measure;
 
     ifstream file("coefficient_polynomial_all1_" + x_data_number + ".txt");
     ifstream x_file("x_value.txt");
@@ -128,8 +135,8 @@ int main()
             file >> original_coefficient[i];
         }
 
-        // for(int j = 0; j < n; j++)
-        //   cout << original_coefficient[j] << endl;
+        for(int j = 0; j < n; j++)
+          cout << original_coefficient[j] << " ";
 
         /* Sampling step, set to 1
         double d;
@@ -138,27 +145,27 @@ int main()
         */
 
         complex<double> * ans = (complex<double> *)malloc(n * sizeof(complex<double>));
-        ans = recur_FFT(original_coefficient, n, 1);
+        // ans = recur_FFT(original_coefficient, n, 1);
+        ans = recur_FFT(original_coefficient, n, 1, x_measure);
         // FFT(original_coefficient, n, 1);
-        // cout << "=================  FFT =============\n";
-        // for(int j = 0; j < n; j++)
-        // cout << original_coefficient[j] << endl;
-        // cout << ans[j] << endl;
+        cout << "=================  FFT =============\n";
+        for(int j = 0; j < n; j++)
+          cout << ans[j] << endl;
 
-        // cout << endl;
-        // cout << endl;
-        // cout << "=================  REVERSE =============\n";
+        cout << endl;
+        cout << endl;
+        cout << "=================  REVERSE =============\n";
         complex<double> * transformed_coefficient = (complex<double> *)malloc(n * sizeof(complex<double>));
-        transformed_coefficient = recur_FFT(ans, n, -1);
+        transformed_coefficient = recur_FFT(ans, n, -1, x_measure);
 
         for(int j = 0; j < n; j++) {
         transformed_coefficient[j] = transformed_coefficient[j] / polar(n + 0.0, 0.0);
         }
 
-        // for(int j = 0; j < n; j++)
-        // cout << transformed_coefficient[j] << endl;
+        for(int j = 0; j < n; j++)
+        cout << transformed_coefficient[j] << endl;
 
-        // cout << "================= ERROR RMS = sqrt(MSE) =============\n";
+        cout << "================= ERROR RMS = sqrt(MSE) =============\n";
         double sum = 0.0;
         for(int j = 0; j < n; j++) {
             double diff_real = original_coefficient[j].real() - transformed_coefficient[j].real();
@@ -168,9 +175,9 @@ int main()
             sum += diff_imag;
         }
         double erro = sqrt(sum / 2 / n);
-        // cout << "error:" << erro << endl;
+        cout << "error:" << erro << endl;
 
-        // cout << "================= ERROR X >= 1.0 =============\n";
+        cout << "================= ERROR X >= 1.0 =============\n";
         double error_sum = 0.0;
         double error_small_sum = 0.0;
         for(int i = 0; i < x_n; ++i)
@@ -179,8 +186,8 @@ int main()
             error_small_sum = diff_square(original_coefficient, transformed_coefficient, n, x_smaller_than1[i]);
             double error = sqrt(error_sum / n / 2);
             double error_small = sqrt(error_small_sum / n / 2);
-            // cout << "x = " << x[i] << "\t\t error = " << error << endl;
-            // cout << "x = " << x_smaller_than1[i] << "\t\t error = " << error_small << endl;
+            cout << "x = " << x[i] << "\t\t error = " << error << endl;
+            cout << "x = " << x_smaller_than1[i] << "\t\t error = " << error_small << endl;
             error_file << x[i] << " " << error << endl;
             error_small_file << x_smaller_than1[i] << " " << error_small << endl;
         }
