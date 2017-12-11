@@ -73,10 +73,23 @@ int main()
 }
 */
 
+double diff_square(complex<double> * original_coefficient, complex<double> * transformed_coefficient, int n, double x) {
+    double sum = 0.0;
+    for(int j = 0; j < n; j++) {
+        double diff_real = (original_coefficient[j].real() - transformed_coefficient[j].real()) * pow(x, j);
+        diff_real *= diff_real;
+        double diff_imag = original_coefficient[j].imag() - transformed_coefficient[j].imag();
+        diff_imag *= diff_imag;
+        sum += diff_real;
+        sum += diff_imag;
+    }
+    return sum;
+}
+
 int main()
 {
     int n;
-    complex<double> vec[MAX];
+    complex<double> original_coefficient[MAX];
 
     ofstream myfile;
     myfile.open ("mse_double.csv");
@@ -89,11 +102,11 @@ int main()
 
         for(int i = 0; i < n; ++i)
         {
-            file >> vec[i];
+            file >> original_coefficient[i];
         }
 
         for(int j = 0; j < n; j++)
-          cout << vec[j] << endl;
+          cout << original_coefficient[j] << endl;
 
         /* Sampling step, set to 1
         double d;
@@ -102,32 +115,32 @@ int main()
         */
 
         complex<double> * ans = (complex<double> *)malloc(n * sizeof(complex<double>));
-        ans = recur_FFT(vec, n, 1);
-        // FFT(vec, n, 1);
+        ans = recur_FFT(original_coefficient, n, 1);
+        // FFT(original_coefficient, n, 1);
         cout << "=================  FFT =============\n";
         for(int j = 0; j < n; j++)
-        // cout << vec[j] << endl;
+        // cout << original_coefficient[j] << endl;
         cout << ans[j] << endl;
 
         cout << endl;
         cout << endl;
         cout << "=================  REVERSE =============\n";
-        complex<double> * reverse_ans = (complex<double> *)malloc(n * sizeof(complex<double>));
-        reverse_ans = recur_FFT(ans, n, -1);
+        complex<double> * transformed_coefficient = (complex<double> *)malloc(n * sizeof(complex<double>));
+        transformed_coefficient = recur_FFT(ans, n, -1);
 
         for(int j = 0; j < n; j++) {
-        reverse_ans[j] = reverse_ans[j] / polar(n + 0.0, 0.0);
+        transformed_coefficient[j] = transformed_coefficient[j] / polar(n + 0.0, 0.0);
         }
 
         for(int j = 0; j < n; j++)
-        cout << reverse_ans[j] << endl;
+        cout << transformed_coefficient[j] << endl;
 
         cout << "================= ERROR RMS = sqrt(MSE) =============\n";
         double sum = 0.0;
         for(int j = 0; j < n; j++) {
-            double diff_real = vec[j].real() - reverse_ans[j].real();
+            double diff_real = original_coefficient[j].real() - transformed_coefficient[j].real();
             diff_real *= diff_real;
-            double diff_imag = vec[j].imag() - reverse_ans[j].imag();
+            double diff_imag = original_coefficient[j].imag() - transformed_coefficient[j].imag();
             diff_imag *= diff_imag;
             sum += diff_imag;
         }
@@ -135,15 +148,19 @@ int main()
         cout << "error:" << erro << endl;
 
         cout << "================= ERROR X >= 1.0 =============\n";
-
-
-        cout << "================= ERROR X < 1.0 =============\n";
-
+        double error_sum = 0.0;
+        for(int i = 0; i < x_n; ++i)
+        {
+            error_sum = diff_square(original_coefficient, transformed_coefficient, n, x[i]);
+            double error = sqrt(error_sum / 2 / n);
+            cout << "x = " << x[i] << "\t\t error = " << error << endl;
+            myfile << x[i] << " " << error << endl;
+        }
+        myfile.close();
+        surfix += 1;
     }
 
-
-    // myfile << "Writing this to a file.\n";
-    myfile.close();
+    
 
     return 0;
 }
