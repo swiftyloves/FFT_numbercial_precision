@@ -19,8 +19,8 @@ complex<double>* recur_FFT(complex<double>* arr, int N, int clockwise, int x_mea
   for(int i = 2; i < x_measure; i++)
     W[i] = pow(W[1], i);
 
-  complex<double>* even = (complex<double>*)malloc(x_measure / 2 * sizeof(complex<double>));
-  complex<double>* odd = (complex<double>*)malloc(x_measure / 2 * sizeof(complex<double>));
+  complex<double>* even = (complex<double>*)malloc(x_measure * sizeof(complex<double>));
+  complex<double>* odd = (complex<double>*)malloc(x_measure * sizeof(complex<double>));
   int unit = N / x_measure;
   for(int i = 0; i < N; i++) {
     if (i % unit == 0){
